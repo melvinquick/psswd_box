@@ -1,6 +1,6 @@
 [project]
 name = "psswd_box"
-version = "1.3.4"
+version = "1.4.0"
 description = "Password generator that never leaves your machine."
 readme = "src/psswd_box/resources/PYPI_README.md"
 license = "MIT"
