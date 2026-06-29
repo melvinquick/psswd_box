@@ -48,7 +48,7 @@ class PsswdBox(QMainWindow):
         self.password = QLabel(
             " ", alignment=Qt.AlignmentFlag.AlignCenter, wordWrap=False
         )
-        self.password.setFixedWidth(560)
+        self.password.setFixedWidth(540)
 
         self.lowercase_letters = QCheckBox("Lowercase")
         self.lowercase_letters.setCheckState(Qt.CheckState.Checked)
