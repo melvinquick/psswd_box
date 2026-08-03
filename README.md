@@ -9,10 +9,9 @@
 
 The general purpose of this app is to give people an easy way to generate passwords completely locally on their machine. This doesn't rely on a cloud service, or any information leaving the local machine whatsoever.
 
-## Install/Uninstall
+## Install/Update/Uninstall
 
-Install: `curl -s https://codeberg.org/melvinquick/psswd_box/raw/branch/main/install.py | python3 -`  
-Uninstall: `curl -s https://codeberg.org/melvinquick/psswd_box/raw/branch/main/uninstall.py | python3 -`
+Install: `curl -s https://codeberg.org/melvinquick/psswd_box/raw/branch/main/install.py | python3 -`
 
 ## Useful Information
 
