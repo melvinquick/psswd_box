@@ -1,11 +1,16 @@
 import os
-import sys
+import shutil
 import subprocess
+import sys
 from textwrap import dedent
 
 
 def print_green(skk):
-    print("\033[92m {}\033[00m".format(skk))
+    print(f"\033[92m {skk}\033[00m")
+
+
+def print_red(skk):
+    print(f"\033[91m {skk}\033[00m")
 
 
 def get_venv_path():
@@ -16,18 +21,22 @@ def get_venv_path():
     return os.path.join(venv_dir, "psswd_box_venv")
 
 
+def get_desktop_file_path():
+    return os.path.expanduser("~/.local/share/applications/psswd_box.desktop")
+
+
 def create_venv(venv_path):
-    print("Creating the virtual environment...", end="")
+    print("Creating the virtual environment...", end=" ")
     sys.stdout.flush()
     subprocess.run(
-        ["python3", "-m", "venv", venv_path],
+        [sys.executable, "-m", "venv", venv_path],
         check=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
-    print_green("󰄬")
+    print_green("[OK]")
 
-    print("Ensuring pip is up to date...", end="")
+    print("Ensuring pip is up to date...", end=" ")
     sys.stdout.flush()
     pip_path = os.path.join(venv_path, "bin", "pip")
     subprocess.run(
@@ -36,11 +45,11 @@ def create_venv(venv_path):
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
-    print_green("󰄬")
+    print_green("[OK]")
 
 
 def install_app(venv_path):
-    print("Installing Psswd Box into the virtual environment...", end="")
+    print("Installing Psswd Box into the virtual environment...", end=" ")
     sys.stdout.flush()
     pip_path = os.path.join(venv_path, "bin", "pip")
     subprocess.run(
@@ -49,7 +58,23 @@ def install_app(venv_path):
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
-    print_green("󰄬")
+    print_green("[OK]")
+
+
+def get_installed_version(venv_path):
+    """Read version from installed package metadata inside the venv."""
+    python_path = os.path.join(venv_path, "bin", "python3")
+    result = subprocess.run(
+        [
+            python_path,
+            "-c",
+            "from importlib.metadata import version; print(version('psswd_box'))",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
 
 
 def get_icon(venv_path):
@@ -58,7 +83,6 @@ def get_icon(venv_path):
         if folder.startswith("python"):
             site_packages = os.path.join(site_packages, folder, "site-packages")
             break
-
     icon_relative_path = "psswd_box/resources/images/psswd_box-128.png"
     full_icon_path = os.path.join(site_packages, icon_relative_path)
     return full_icon_path
@@ -73,40 +97,124 @@ def get_app_path(venv_path):
 
 
 def create_desktop_file(icon, version, python, app):
-    print("Creating the .desktop entry...", end="")
+    print("Creating the .desktop entry...", end=" ")
     sys.stdout.flush()
-    desktop_content = dedent(f"""
-    [Desktop Entry]
-    Version={version}
-    Type=Application
-    Name=Psswd Box
-    Comment=Password generator that never leaves your machine.
-    Exec={python} {app}
-    Icon={icon}
-    Terminal=false
-    Categories=Utility;
+
+    desktop_content = dedent(f"""\
+        [Desktop Entry]
+        Version={version}
+        Type=Application
+        Name=Psswd Box
+        Comment=Password generator that never leaves your machine.
+        Exec={python} {app}
+        Icon={icon}
+        Terminal=false
+        Categories=Utility;
     """)
-    desktop_content = desktop_content.lstrip()
-    with open(
-        os.path.expanduser("~/.local/share/applications/psswd_box.desktop"), "w"
-    ) as f:
+
+    desktop_path = get_desktop_file_path()
+    os.makedirs(os.path.dirname(desktop_path), exist_ok=True)
+
+    with open(desktop_path, "w") as f:
         f.write(desktop_content)
-    print_green("󰄬")
+    print_green("[OK]")
 
 
-def install():
+def do_uninstall():
+    """Removes venv and desktop file. Returns True if anything was removed."""
+    venv_path = get_venv_path()
+    desktop_file_path = get_desktop_file_path()
+    removed = False
+
+    if os.path.exists(venv_path):
+        print("Removing the virtual environment...", end=" ")
+        sys.stdout.flush()
+        shutil.rmtree(venv_path)
+        print_green("[OK]")
+        removed = True
+
+    if os.path.exists(desktop_file_path):
+        print("Removing the .desktop entry...", end=" ")
+        sys.stdout.flush()
+        os.remove(desktop_file_path)
+        print_green("[OK]")
+        removed = True
+
+    return removed
+
+
+def do_install():
+    """Fresh install: creates venv, installs app, creates desktop entry."""
     venv_path = get_venv_path()
     create_venv(venv_path)
     install_app(venv_path)
-    version = "1.4.2"
+
+    version = get_installed_version(venv_path)
+
     icon = get_icon(venv_path)
     python = get_python_path(venv_path)
     app = get_app_path(venv_path)
     create_desktop_file(icon, version, python, app)
 
+    print()
+    print_green(f"Psswd Box v{version} has been successfully installed.")
+
+
+def handle_update():
+    """Update = full uninstall followed by fresh install."""
+    print("\nUpdating Psswd Box...\n")
+    existed = do_uninstall()
+    if not existed:
+        print("No existing installation found. Performing fresh install.\n")
+    else:
+        print()
+    do_install()
+
+
+def show_menu():
+    while True:
+        print("\n=== Psswd Box Installer ===")
+        print("1) Install")
+        print("2) Update")
+        print("3) Uninstall")
+        print("0) Exit")
+
+        choice = input("\nSelect an option [0-3]: ").strip()
+
+        if choice == "1":
+            venv_path = get_venv_path()
+            if os.path.exists(venv_path):
+                print_red(
+                    "\nExisting installation detected. Please use 'Update' instead."
+                )
+                continue
+            print()
+            do_install()
+            break
+
+        elif choice == "2":
+            handle_update()
+            break
+
+        elif choice == "3":
+            print()
+            if do_uninstall():
+                print()
+                print_green("Psswd Box has been uninstalled.")
+            else:
+                print("\nPsswd Box does not appear to be installed.")
+            break
+
+        elif choice == "0":
+            print("\nGoodbye.")
+            break
+
+        else:
+            print_red("\nInvalid selection. Please try again.")
+
 
 def main():
-    install()
+    show_menu()
 
 
 if __name__ == "__main__":
