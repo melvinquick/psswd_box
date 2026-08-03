@@ -6,4 +6,4 @@ window_size:
 num_characters:
   min: 10
   max: 60
-  default: 20
+  default: 24
