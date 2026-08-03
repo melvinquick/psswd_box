@@ -149,6 +149,7 @@ def do_install():
     create_venv(venv_path)
     install_app(venv_path)
 
+    # Dynamically read version from installed package metadata
     version = get_installed_version(venv_path)
 
     icon = get_icon(venv_path)
@@ -172,45 +173,53 @@ def handle_update():
 
 
 def show_menu():
-    while True:
-        print("\n=== Psswd Box Installer ===")
-        print("1) Install")
-        print("2) Update")
-        print("3) Uninstall")
-        print("0) Exit")
+    try:
+        with open("/dev/tty", "r") as tty:
+            while True:
+                print("\n=== Psswd Box Installer ===")
+                print("1) Install")
+                print("2) Update")
+                print("3) Uninstall")
+                print("0) Exit")
 
-        choice = input("\nSelect an option [0-3]: ").strip()
+                sys.stdout.write("\nSelect an option [0-3]: ")
+                sys.stdout.flush()
+                choice = tty.readline().strip()
 
-        if choice == "1":
-            venv_path = get_venv_path()
-            if os.path.exists(venv_path):
-                print_red(
-                    "\nExisting installation detected. Please use 'Update' instead."
-                )
-                continue
-            print()
-            do_install()
-            break
+                if choice == "1":
+                    venv_path = get_venv_path()
+                    if os.path.exists(venv_path):
+                        print_red(
+                            "\nExisting installation detected. Please use 'Update' instead."
+                        )
+                        continue
+                    print()
+                    do_install()
+                    break
 
-        elif choice == "2":
-            handle_update()
-            break
+                elif choice == "2":
+                    handle_update()
+                    break
 
-        elif choice == "3":
-            print()
-            if do_uninstall():
-                print()
-                print_green("Psswd Box has been uninstalled.")
-            else:
-                print("\nPsswd Box does not appear to be installed.")
-            break
+                elif choice == "3":
+                    print()
+                    if do_uninstall():
+                        print()
+                        print_green("Psswd Box has been uninstalled.")
+                    else:
+                        print("\nPsswd Box does not appear to be installed.")
+                    break
 
-        elif choice == "0":
-            print("\nGoodbye.")
-            break
+                elif choice == "0":
+                    print("\nGoodbye.")
+                    break
 
-        else:
-            print_red("\nInvalid selection. Please try again.")
+                else:
+                    print_red("\nInvalid selection. Please try again.")
+    except OSError:
+        print_red("Error: No interactive terminal available.")
+        print_red("Please run this script from a terminal session.")
+        sys.exit(1)
 
 
 def main():
