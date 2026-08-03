@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 )
 
 from .password_generator import PasswordGenerator
+from .qss_file_handler import QssFileHandler
 from .yaml_file_handler import YamlFileHandler
 
 config_file = YamlFileHandler("resources/configs/config.yaml")
@@ -28,6 +29,9 @@ config = config_file.load_yaml_file()
 
 themes_file = YamlFileHandler("resources/configs/themes.yaml")
 themes = themes_file.load_yaml_file()
+
+qss_file = QssFileHandler("resources/styles/nord.qss")
+qss = qss_file.load_qss_file()
 
 
 class PsswdBox(QMainWindow):
