@@ -1,7 +1,8 @@
 window_title: "Psswd Box"
 window_size:
-  width: 800
-  height: 150
+  width: 762
+  height: 750
+
 num_characters:
   min: 10
   max: 60
