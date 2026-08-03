@@ -1,15 +1,32 @@
-light:
-  background-color: "#d8dee9"
-  color: "#2e3440"
-  border: 1px solid '#e5e9f0'
-  widget-background-color: "#eceff4"
-
 dark:
-  background-color: "#2e3440"
-  color: "#eceff4"
-  border: 1px solid '#434c5e'
-  widget-background-color: "#4c566a"
+  background-color: "#2E3440"
+  surface-color: "#3B4252"
+  widget-background-color: "#434C5E"
+  color: "#D8DEE9"
+  muted-color: "#ECEFF4"
+  border: "1px solid #4C566A"
+  accent-color: "#81A1C1"
+  accent-hover-color: "#88C0D0"
+  accent-text-color: "#ECEFF4"
+  success-color: "#A3BE8C"
+  warning-color: "#EBCB8B"
+  danger-color: "#BF616A"
+
+light:
+  background-color: "#ECEFF4"
+  surface-color: "#E5E9F0"
+  widget-background-color: "#D8DEE9"
+  color: "#2E3440"
+  muted-color: "#4C566A"
+  border: "1px solid #D8DEE9"
+  accent-color: "#5E81AC"
+  accent-hover-color: "#81A1C1"
+  accent-text-color: "#ECEFF4"
+  success-color: "#A3BE8C"
+  warning-color: "#EBCB8B"
+  danger-color: "#BF616A"
 
 general:
-  border-radius: "4px"
-  padding: "2px 4px"
+  border-radius: "6px"
+  padding: "8px 12px"
+  font-size: "14px"
