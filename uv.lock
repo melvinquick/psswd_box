@@ -54,7 +54,7 @@ wheels = [
 
 [[package]]
 name = "psswd-box"
-version = "1.4.2"
+version = "2.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "pyside6" },
