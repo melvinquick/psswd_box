@@ -37,6 +37,8 @@ qss = qss_file.load_qss_file()
 class PsswdBox(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.generator = PasswordGenerator()
+        self.theme_name = "dark"
         self.init_ui()
 
     def init_ui(self):
