@@ -1,65 +1,14 @@
-from secrets import choice
+from secrets import SystemRandom, choice
+from string import ascii_lowercase, ascii_uppercase, digits
 
 
 class PasswordGenerator:
     def __init__(self):
-        self.lowercase_letters = [
-            "a",
-            "b",
-            "c",
-            "d",
-            "e",
-            "f",
-            "g",
-            "h",
-            "i",
-            "j",
-            "k",
-            "l",
-            "m",
-            "n",
-            "o",
-            "p",
-            "q",
-            "r",
-            "s",
-            "t",
-            "u",
-            "v",
-            "x",
-            "x",
-            "y",
-            "z",
-        ]
-        self.uppercase_letters = [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H",
-            "I",
-            "J",
-            "K",
-            "L",
-            "M",
-            "N",
-            "O",
-            "P",
-            "Q",
-            "R",
-            "S",
-            "T",
-            "U",
-            "V",
-            "W",
-            "X",
-            "Y",
-            "Z",
-        ]
-        self.numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        self.rng = SystemRandom()
+
+        self.lowercase_letters = list(ascii_lowercase)
+        self.uppercase_letters = list(ascii_uppercase)
+        self.numbers = list(digits)
         self.symbols = [
             "!",
             "@",
