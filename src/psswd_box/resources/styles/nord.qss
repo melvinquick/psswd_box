@@ -1,0 +1,168 @@
+/* resources/styles/nord.qss */
+#MainWindow, #CentralWidget {
+    background-color: {{background-color}};
+}
+
+QLabel {
+    color: {{color}};
+    background: transparent;
+    border: none;
+    font-size: {{font-size}};
+}
+
+#TopBar, #Section {
+    background-color: {{surface-color}};
+    border: {{border}};
+    border-radius: {{border-radius}};
+}
+
+#AppName {
+    font-size: 16px;
+    font-weight: 700;
+    color: {{color}};
+}
+
+#SectionTitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: {{color}};
+    padding-bottom: 8px;
+    border-bottom: {{border}};
+}
+
+#MutedLabel, #StatusLabel {
+    color: {{muted-color}};
+}
+
+QCheckBox {
+    color: {{color}};
+    spacing: 8px;
+    background: transparent;
+    padding: 8px 0px;
+    font-size: 15px;
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    border: {{border}};
+    background-color: {{widget-background-color}};
+}
+
+QCheckBox::indicator:hover {
+    border-color: {{accent-color}};
+}
+
+QCheckBox::indicator:checked {
+    background-color: {{accent-color}};
+    border-color: {{accent-color}};
+}
+
+QLineEdit, QSpinBox {
+    background-color: {{widget-background-color}};
+    color: {{color}};
+    border: {{border}};
+    border-radius: {{border-radius}};
+    padding: {{padding}};
+    font-size: {{font-size}};
+    selection-background-color: {{accent-color}};
+}
+
+QLineEdit:focus, QSpinBox:focus {
+    border: 1px solid {{accent-color}};
+}
+
+QSpinBox {
+    padding-right: 34px;
+}
+
+QSpinBox::up-button, QSpinBox::down-button {
+    background-color: transparent;
+    width: 32px;
+    border: none;
+}
+
+QSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    border-left: {{border}};
+    border-bottom: {{border}};
+    border-top-right-radius: {{border-radius}};
+}
+
+QSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    border-left: {{border}};
+    border-bottom-right-radius: {{border-radius}};
+}
+
+QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+    background-color: {{accent-color}};
+}
+
+QSpinBox::up-button:pressed, QSpinBox::down-button:pressed {
+    background-color: {{accent-hover-color}};
+}
+
+QSpinBox::up-arrow, QSpinBox::down-arrow {
+    width: 12px;
+    height: 12px;
+}
+
+QPushButton {
+    background-color: {{widget-background-color}};
+    color: {{color}};
+    border: {{border}};
+    border-radius: {{border-radius}};
+    padding: {{padding}};
+    font-size: {{font-size}};
+}
+
+QPushButton:hover {
+    border-color: {{accent-color}};
+}
+
+QPushButton#PrimaryButton {
+    background-color: {{accent-color}};
+    color: {{accent-text-color}};
+    border: none;
+    font-weight: 700;
+    padding: 12px 16px;
+    font-size: 15px;
+}
+
+QPushButton#PrimaryButton:hover {
+    background-color: {{accent-hover-color}};
+}
+
+QSlider::groove:horizontal {
+    height: 6px;
+    background: {{widget-background-color}};
+    border-radius: 3px;
+}
+
+QSlider::sub-page:horizontal {
+    background: {{accent-color}};
+    border-radius: 3px;
+}
+
+QSlider::handle:horizontal {
+    width: 18px;
+    height: 18px;
+    margin: -6px 0;
+    border-radius: 9px;
+    background: {{accent-color}};
+}
+
+QProgressBar {
+    background-color: {{widget-background-color}};
+    border: {{border}};
+    border-radius: {{border-radius}};
+}
+
+QProgressBar::chunk {
+    background-color: {{accent-color}};
+    border-radius: {{border-radius}};
+}
