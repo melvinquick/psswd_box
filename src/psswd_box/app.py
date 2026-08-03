@@ -1,8 +1,8 @@
 import math
 import sys
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont, QFontMetrics
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
