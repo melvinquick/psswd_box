@@ -1,7 +1,4 @@
-"""
-Password generator that never leaves your machine.
-"""
-
+import math
 import sys
 
 from PySide6.QtCore import Qt
