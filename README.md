@@ -15,5 +15,5 @@ Install: `curl -s https://github.com/melvinquick/psswd_box/raw/branch/main/insta
 
 ## Useful Information
 
-[Project Goals](https://github.com/melvinquick/psswd_box/projects/12633)  
+[Project](https://github.com/users/melvinquick/projects/13)  
 [Latest Releases](https://pypi.org/project/psswd_box/)
