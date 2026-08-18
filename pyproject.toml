@@ -9,8 +9,8 @@ requires-python = ">=3.10"
 dependencies = ["pyside6>=6.8.2.1", "pyyaml>=6.0.2"]
 
 [project.urls]
-repository = "https://codeberg.org/melvinquick/psswd_box"
-issues = "https://codeberg.org/melvinquick/psswd_box/issues"
+repository = "https://github.com/melvinquick/psswd_box"
+issues = "https://github.com/melvinquick/psswd_box/issues"
 
 [project.gui-scripts]
 psswd-box = "psswd_box.app:main"
