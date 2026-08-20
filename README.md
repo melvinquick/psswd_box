@@ -11,7 +11,7 @@ The general purpose of this app is to give people an easy way to generate passwo
 
 ## Install/Update/Uninstall
 
-Install: `curl -s https://github.com/melvinquick/psswd_box/raw/branch/main/install.py | python3 -`
+Install: `curl -s https://raw.githubusercontent.com/melvinquick/psswd_box/main/install.py | python3 -`
 
 ## Useful Information
 
