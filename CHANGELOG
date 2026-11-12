@@ -2,143 +2,115 @@
 
 ## 1.0.0 (24 Jan 2025)
 
+### New Features
+
 - Initial release
 
 ## 1.2.0 (06 Feb 2025)
 
-### Major Changes
+### New Features
 
-### Minor Changes
+- Made the password output auto-copy to the clipboard once generated
 
-- [Rearrange UI to make it more compact](https://codeberg.org/melvinquick/psswd_box/issues/1)
-- [Make password output auto-copy to clipboard once password has been generated](https://codeberg.org/melvinquick/psswd_box/issues/2)
+### Improvements
 
-### Patch Changes
-
-### Documentation Changes
+- Rearranged the UI to make it more compact
 
 ## 1.2.2 (06 Feb 2025)
 
-### Major Changes
+### Improvements
 
-### Minor Changes
-
-### Patch Changes
-
-- [Change font family to something more readable](https://codeberg.org/melvinquick/psswd_box/issues/3)
-- [Add ability for password font size to scale](https://codeberg.org/melvinquick/psswd_box/issues/4)
-
-### Documentation Changes
+- Changed font family to something more readable
+- Added ability for password font size to scale
 
 ## 1.3.0 (11 Mar 2025)
 
-### Major Changes
+### Improvements
 
-### Minor Changes
-
-- [Update file structure to UV instead of BeeWare](https://codeberg.org/melvinquick/psswd_box/issues/5)
-
-### Patch Changes
-
-### Documentation Changes
+- Updated file structure to use `uv` instead of BeeWare
 
 ## 1.3.3 (20 Mar 2025)
 
-### Major Changes
+### Bug Fixes
 
-### Minor Changes
+- Fixed custom module imports
 
-### Patch Changes
+### Improvements
 
-- [Remove unneeded variable](https://codeberg.org/melvinquick/psswd_box/issues/6)
-- [Correct variables that don't need self assignment](https://codeberg.org/melvinquick/psswd_box/issues/7)
-- [Fix custom module imports](https://codeberg.org/melvinquick/psswd_box/issues/8)
-
-### Documentation Changes
+- Removed unneeded variables
+- Corrected variables that didn't need self-assignment
 
 ## 1.3.4 (31 Oct 2025)
 
-### Major Changes
+### Improvements
 
-### Minor Changes
-
-### Patch Changes
-
-- [Reduce required Python Version](https://codeberg.org/melvinquick/psswd_box/issues/9)
-
-### Documentation Changes
+- Reduced the required Python version
 
 ## 1.4.0 (22 Apr 2026)
 
-### Major Changes
+### Improvements
 
-### Minor Changes
-
-- [Remove "High Risk" Symbols](https://codeberg.org/melvinquick/psswd_box/issues/10)
-
-### Patch Changes
-
-### Documentation Changes
+- Removed "High Risk" symbols from the character pool
 
 ## 1.4.1 (23 Jun 2026)
 
-### Major Changes
-
-### Minor Changes
-
-### Patch Changes
+### Improvements
 
 - Version bump to update dependencies
-
-### Documentation Changes
-
-## X.X.X (XX XXX XXXX)
-
-### Major Changes
-
-### Minor Changes
-
-### Patch Changes
-
-- [Fix Password Output Box](https://codeberg.org/melvinquick/psswd_box/issues/12)
-
-### Documentation Changes
-
-- [Update Logo](https://codeberg.org/melvinquick/psswd_box/issues/11)
 
 ## 1.4.2 (21 Jul 2026)
 
-### Major Changes
-
-### Minor Changes
-
-### Patch Changes
+### Improvements
 
 - Version bump to update dependencies
 
-### Documentation Changes
-
 ## 2.0.0 (03 Aug 2026)
 
-### Major Changes
+### New Features
 
-- Complete overhaul of GUI
+- Complete overhaul of the GUI
+
+### Improvements
+
 - Updated backend to simplify readability and improve performance
 
-### Minor Changes
+### Bug Fixes
 
-### Patch Changes
-
-### Documentation Changes
+- Fixed the password output box
 
 ## 2.0.14 (26 Oct 2026)
 
-### Major Changes
-
-### Minor Changes
-
-### Patch Changes
+### Improvements
 
 - Version bump to update dependencies and Python versions
 
-### Documentation Changes
+## 3.0.0 (12 Nov 2026)
+
+### New Features
+
+- Added a Preferences dialog to manage default settings for character types, length, and auto-copy
+- Added persistent settings using `QSettings` to remember user preferences across sessions
+- Added 12 new themes (Psswd Box Dark/Light, Phaino Dark/Light, Equinox Dark/Light, Catppuccin Mocha/Latte, Solarized Dark/Light, Gruvbox Dark/Light) with live theme switching
+- Added an About dialog accessible from the Help menu showing app version, author, and license
+- Added SVG icons for password visibility and copy actions within the password field
+- Added a dynamic password strength indicator that scales with entropy and adapts to theme colors
+- Added "Copy Password" and "Exit" actions to the menu bar
+
+### Improvements
+
+- Completely overhauled the GUI, replacing the fixed layout with a responsive design that resizes gracefully
+- Modularized the codebase, moving all UI components into a flat `components/` directory for better maintainability
+- Replaced the custom title bar with a native styled menu bar and direct Preferences button
+- Moved all styling into a centralized `styles.qss` file utilizing token substitution for dynamic theming
+- Added sensible defaults for first-time users (24 characters, all character types, auto-copy enabled)
+- Improved layout resilience, preventing widgets from squishing at minimum window sizes
+- Updated README badges to reflect the new Psswd Box Dark theme palette
+- Updated the app logo
+
+### Bug Fixes
+
+- Fixed password generation logic to properly guarantee at least one character from each enabled pool
+- Fixed the visibility toggle not defaulting to hidden on app launch
+- Fixed the password input box collapsing and overlapping the strength bar at smaller window sizes
+- Fixed window resizing forcing the generate button to the bottom of the screen
+- Fixed menu item styling to ensure consistent colors across all themes

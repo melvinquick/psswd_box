@@ -1,377 +1,231 @@
-import math
 import sys
 
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QFont
+from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtWidgets import (
     QApplication,
-    QCheckBox,
-    QFrame,
-    QGridLayout,
     QHBoxLayout,
-    QLabel,
-    QLineEdit,
     QMainWindow,
-    QProgressBar,
+    QMenuBar,
     QPushButton,
-    QSlider,
-    QSpinBox,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
 
-from .password_generator import PasswordGenerator
-from .qss_file_handler import QssFileHandler
-from .yaml_file_handler import YamlFileHandler
-
-config_file = YamlFileHandler("resources/configs/config.yaml")
-config = config_file.load_yaml_file()
-
-themes_file = YamlFileHandler("resources/configs/themes.yaml")
-themes = themes_file.load_yaml_file()
-
-qss_file = QssFileHandler("resources/styles/nord.qss")
-qss = qss_file.load_qss_file()
+from .components.about_dialog import AboutDialog
+from .components.character_options import CharacterOptions
+from .components.generation_settings import GenerationSettings
+from .components.output_section import OutputSection
+from .components.password_generator import PasswordGenerator
+from .components.preferences_dialog import PreferencesDialog
+from .components.qss_file_handler import QssFileHandler
+from .components.theme_manager import ThemeManager
+from .components.yaml_file_handler import YamlFileHandler
 
 
 class PsswdBox(QMainWindow):
     def __init__(self):
         super().__init__()
         self.generator = PasswordGenerator()
-        self.theme_name = "dark"
+        self._password_is_visible = False
+
+        self.themes = YamlFileHandler(
+            "../resources/styles/themes.yaml"
+        ).load_yaml_file()
+        qss = QssFileHandler("../resources/styles/styles.qss").load_qss_file()
+        self.theme_manager = ThemeManager(self.themes, qss)
+
+        self.settings = QSettings("psswd_box", "settings")
+        self.theme_name = self.settings.value("theme", ThemeManager.DEFAULT_THEME)
+
+        self._status_timer = QTimer(self)
+        self._status_timer.setSingleShot(True)
+        self._status_timer.timeout.connect(self.clear_status)
+
         self.init_ui()
 
     def init_ui(self):
-        self.setWindowTitle(config["window_title"])
-        self.setFixedSize(
-            config["window_size"]["width"],
-            config["window_size"]["height"],
-        )
+        self.setWindowTitle("Psswd Box")
         self.setObjectName("MainWindow")
 
+        # --- CUSTOM MENU BAR ---
+        top_bar_container = QWidget()
+        top_bar_container.setObjectName("TopBarContainer")
+        top_bar_layout = QHBoxLayout(top_bar_container)
+        top_bar_layout.setContentsMargins(4, 4, 4, 4)
+        top_bar_layout.setSpacing(0)
+
+        self.menu_bar = QMenuBar()
+        self.menu_bar.setObjectName("MenuBar")
+        self.menu_bar.setSizePolicy(
+            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred
+        )
+
+        file_menu = self.menu_bar.addMenu("File")
+        file_menu.addAction("Exit", self.close)
+
+        edit_menu = self.menu_bar.addMenu("Edit")
+        edit_menu.addAction("Copy Password", self.copy_password)
+
+        help_menu = self.menu_bar.addMenu("Help")
+        help_menu.addAction("About", self.open_about)
+
+        self.prefs_btn = QPushButton("Preferences")
+        self.prefs_btn.setObjectName("MenuButton")
+        self.prefs_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.prefs_btn.clicked.connect(self.open_preferences)
+
+        top_bar_layout.addWidget(self.menu_bar)
+        top_bar_layout.addWidget(self.prefs_btn)
+        top_bar_layout.addStretch()
+
+        # --- MAIN LAYOUT ---
         central = QWidget()
         central.setObjectName("CentralWidget")
         self.setCentralWidget(central)
 
         root_layout = QVBoxLayout(central)
-        root_layout.setContentsMargins(24, 24, 24, 24)
-        root_layout.setSpacing(16)
+        root_layout.setContentsMargins(0, 0, 0, 0)
+        root_layout.setSpacing(0)
+        root_layout.addWidget(top_bar_container)
 
-        root_layout.addWidget(self.build_top_bar())
-        root_layout.addWidget(self.build_character_options_section())
-        root_layout.addWidget(self.build_generation_settings_section())
-        root_layout.addWidget(self.build_output_section())
+        content_widget = QWidget()
+        content_widget.setObjectName("CentralWidget")
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.setContentsMargins(24, 16, 24, 24)
+        content_layout.setSpacing(16)
+
+        self.char_options = CharacterOptions(self.settings)
+        self.gen_settings = GenerationSettings(self.settings)
+        self.output_section = OutputSection()
+
+        self.output_section.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding
+        )
+
+        content_layout.addWidget(self.char_options)
+        content_layout.addWidget(self.gen_settings)
+        content_layout.addWidget(self.output_section)
 
         self.generate_button = QPushButton("Generate password")
         self.generate_button.setObjectName("PrimaryButton")
         self.generate_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.generate_button.setMinimumHeight(46)
+        content_layout.addWidget(self.generate_button)
+
+        root_layout.addWidget(content_widget)
+
+        # --- SIGNALS ---
+        self.char_options.changed.connect(self.update_strength)
+        self.gen_settings.changed.connect(self.update_strength)
+        self.output_section.visibility_btn.clicked.connect(
+            self.toggle_password_visibility
+        )
+        self.output_section.copy_btn.clicked.connect(self.copy_password)
         self.generate_button.clicked.connect(self.generate_password)
-        root_layout.addWidget(self.generate_button)
+
+        self.theme_manager.register(self.output_section.status_label)
+        self.theme_manager.register(self.menu_bar)
 
         self.apply_theme(self.theme_name)
-        self.update_strength()
 
-    def build_top_bar(self):
-        top_bar = QFrame()
-        top_bar.setObjectName("TopBar")
-        top_bar.setFrameShape(QFrame.Shape.NoFrame)
-        top_bar.setFixedHeight(48)
+        muted_color = self.themes[self.theme_name]["muted-color"]
+        self.output_section.toggle_visibility(False, muted_color)
 
-        layout = QHBoxLayout(top_bar)
-        layout.setContentsMargins(16, 0, 16, 0)
-        layout.setSpacing(12)
+        self.setMinimumWidth(600)
+        self.adjustSize()
 
-        app_name = QLabel("Psswd Box")
-        app_name.setObjectName("AppName")
+        if self.height() < 720:
+            self.resize(self.width(), 720)
 
-        self.theme_toggle = QPushButton("Switch theme")
-        self.theme_toggle.setObjectName("SecondaryButton")
-        self.theme_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.theme_toggle.clicked.connect(self.toggle_theme)
+    # --- ACTIONS ---
+    def open_preferences(self):
+        dialog = PreferencesDialog(self.settings, self.theme_manager, self)
+        dialog.settings_changed.connect(self.sync_live_settings)
+        dialog.exec()
 
-        layout.addWidget(app_name)
-        layout.addStretch()
-        layout.addWidget(self.theme_toggle)
+    def open_about(self):
+        accent_color = self.themes[self.theme_name]["accent-color"]
+        self.about_dialog = AboutDialog(accent_color, self)
+        self.about_dialog.exec()
 
-        return top_bar
-
-    def make_section(self, title):
-        section = QFrame()
-        section.setObjectName("Section")
-        section.setFrameShape(QFrame.Shape.NoFrame)
-
-        layout = QVBoxLayout(section)
-        layout.setContentsMargins(18, 18, 18, 18)
-        layout.setSpacing(12)
-
-        section_title = QLabel(title)
-        section_title.setObjectName("SectionTitle")
-        layout.addWidget(section_title)
-
-        return section, layout
-
-    def build_character_options_section(self):
-        section, layout = self.make_section("Character options")
-
-        self.lowercase_letters = self.make_checkbox("Lowercase letters", True)
-        self.uppercase_letters = self.make_checkbox("Uppercase letters", True)
-        self.numbers = self.make_checkbox("Numbers", True)
-        self.symbols = self.make_checkbox("Symbols", True)
-
-        option_grid = QGridLayout()
-        option_grid.setSpacing(12)
-        option_grid.setColumnStretch(0, 1)
-        option_grid.setColumnStretch(1, 1)
-
-        option_grid.addWidget(self.lowercase_letters, 0, 0)
-        option_grid.addWidget(self.uppercase_letters, 0, 1)
-        option_grid.addWidget(self.numbers, 1, 0)
-        option_grid.addWidget(self.symbols, 1, 1)
-
-        layout.addLayout(option_grid)
-
-        return section
-
-    def build_generation_settings_section(self):
-        section, layout = self.make_section("Generation settings")
-
-        min_len = int(config.get("num_characters", {}).get("min", 8))
-        max_len = int(config.get("num_characters", {}).get("max", 128))
-        default_len = int(config.get("num_characters", {}).get("default", 20))
-
-        self.length_slider = QSlider(Qt.Orientation.Horizontal)
-        self.length_slider.setRange(min_len, max_len)
-        self.length_slider.setValue(default_len)
-        self.length_slider.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.length_slider.valueChanged.connect(self.on_slider_changed)
-
-        self.length_spin = QSpinBox()
-        self.length_spin.setRange(min_len, max_len)
-        self.length_spin.setValue(default_len)
-        self.length_spin.setSuffix(" characters")
-        self.length_spin.valueChanged.connect(self.on_spin_changed)
-
-        length_row = QHBoxLayout()
-        length_row.setSpacing(12)
-        length_row.addWidget(self.length_slider, 1)
-        length_row.addWidget(self.length_spin)
-        layout.addLayout(length_row)
-
-        self.auto_copy = self.make_checkbox("Copy automatically after generation", True)
-        layout.addWidget(self.auto_copy)
-
-        return section
-
-    def build_output_section(self):
-        section, layout = self.make_section("Generated password")
-
-        self.password_edit = QLineEdit()
-        self.password_edit.setObjectName("PasswordEdit")
-        self.password_edit.setReadOnly(True)
-        self.password_edit.setPlaceholderText("Generate a password to see it here.")
-        self.password_edit.setMinimumHeight(58)
-
-        password_font = QFont("Monospace", 16)
-        password_font.setStyleHint(QFont.StyleHint.Monospace)
-        self.password_edit.setFont(password_font)
-
-        self.visibility_button = QPushButton("Hide")
-        self.visibility_button.setObjectName("SecondaryButton")
-        self.visibility_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.visibility_button.clicked.connect(self.toggle_password_visibility)
-
-        self.copy_button = QPushButton("Copy")
-        self.copy_button.setObjectName("SecondaryButton")
-        self.copy_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.copy_button.clicked.connect(self.copy_password)
-
-        password_row = QHBoxLayout()
-        password_row.setSpacing(10)
-        password_row.addWidget(self.password_edit, 1)
-        password_row.addWidget(self.visibility_button)
-        password_row.addWidget(self.copy_button)
-        layout.addLayout(password_row)
-
-        strength_row = QHBoxLayout()
-        strength_row.setSpacing(10)
-
-        self.strength_label = QLabel("Strength: --")
-        self.strength_label.setObjectName("MutedLabel")
-
-        self.strength_bar = QProgressBar()
-        self.strength_bar.setRange(0, 100)
-        self.strength_bar.setValue(0)
-        self.strength_bar.setTextVisible(False)
-        self.strength_bar.setMinimumHeight(14)
-
-        strength_row.addWidget(self.strength_label)
-        strength_row.addWidget(self.strength_bar, 1)
-        layout.addLayout(strength_row)
-
-        self.status_label = QLabel("")
-        self.status_label.setObjectName("StatusLabel")
-        self.status_label.setWordWrap(True)
-        layout.addWidget(self.status_label)
-
-        return section
-
-    def make_checkbox(self, text, checked):
-        checkbox = QCheckBox(text)
-        checkbox.blockSignals(True)
-        checkbox.setChecked(checked)
-        checkbox.blockSignals(False)
-        checkbox.stateChanged.connect(self.update_strength)
-        return checkbox
-
-    def toggle_theme(self):
-        self.theme_name = "light" if self.theme_name == "dark" else "dark"
-        self.apply_theme(self.theme_name)
+    def sync_live_settings(self):
+        new_theme = self.settings.value("theme", ThemeManager.DEFAULT_THEME)
+        if new_theme != self.theme_name:
+            self.apply_theme(new_theme)
 
     def apply_theme(self, theme_name):
-        self.theme_name = theme_name if theme_name in themes else "dark"
-        self.theme_toggle.setText(
-            "Switch to light" if self.theme_name == "dark" else "Switch to dark"
-        )
-
-        tokens = {**themes[self.theme_name], **themes["general"]}
-        stylesheet = qss
-        for key, value in tokens.items():
-            stylesheet = stylesheet.replace("{{" + key + "}}", str(value))
-
-        self.setStyleSheet(stylesheet)
+        self.theme_name = self.theme_manager.apply(self, theme_name)
+        muted_color = self.themes[self.theme_name]["muted-color"]
+        self.output_section.update_theme_icons(muted_color)
+        if self._password_is_visible:
+            self.output_section.toggle_visibility(True, muted_color)
         self.update_strength()
 
-    def on_slider_changed(self, value):
-        if self.length_spin.value() != value:
-            self.length_spin.setValue(value)
-        self.update_strength()
-
-    def on_spin_changed(self, value):
-        if self.length_slider.value() != value:
-            self.length_slider.setValue(value)
-        self.update_strength()
-
-    def get_character_types(self):
-        return [
-            "y" if self.lowercase_letters.isChecked() else "n",
-            "y" if self.uppercase_letters.isChecked() else "n",
-            "y" if self.numbers.isChecked() else "n",
-            "y" if self.symbols.isChecked() else "n",
-        ]
+    def update_strength(self):
+        character_types = self.char_options.get_types()
+        pool_size = self.generator.pool_size(character_types)
+        length = self.gen_settings.get_length()
+        self.output_section.update_strength(pool_size, length)
 
     def generate_password(self):
-        character_types = self.get_character_types()
+        character_types = self.char_options.get_types()
 
-        if character_types == ["n", "n", "n", "n"]:
-            self.password_edit.clear()
+        if not any(character_types):
+            self.output_section.password_edit.clear()
             self.set_status("Choose at least one character type.", "danger")
             self.update_strength()
             return
 
         password = self.generator.generate_password(
-            character_types,
-            self.length_spin.value(),
+            character_types, self.gen_settings.get_length()
         )
 
         if not password:
             self.set_status("Password generation failed.", "danger")
             return
 
-        self.password_edit.setText(password)
+        self.output_section.password_edit.setText(password)
         self.update_strength()
 
-        if self.auto_copy.isChecked():
+        if self.gen_settings.is_auto_copy_enabled():
             self.copy_to_clipboard()
             self.set_status("Password generated and copied.", "success")
-            QTimer.singleShot(2500, self.clear_status)
         else:
             self.set_status("Password generated.", "success")
-            QTimer.singleShot(2500, self.clear_status)
 
     def copy_password(self):
-        if not self.password_edit.text():
+        if not self.output_section.password_edit.text():
             self.set_status("Nothing to copy yet.", "warning")
             return
-
         self.copy_to_clipboard()
         self.set_status("Copied to clipboard.", "success")
-        QTimer.singleShot(2500, self.clear_status)
 
     def copy_to_clipboard(self):
-        QApplication.clipboard().setText(self.password_edit.text())
+        QApplication.clipboard().setText(self.output_section.password_edit.text())
 
     def toggle_password_visibility(self):
-        if self.password_edit.echoMode() == QLineEdit.EchoMode.Normal:
-            self.password_edit.setEchoMode(QLineEdit.EchoMode.Password)
-            self.visibility_button.setText("Show")
-        else:
-            self.password_edit.setEchoMode(QLineEdit.EchoMode.Normal)
-            self.visibility_button.setText("Hide")
-
-    def selected_pool_size(self):
-        pool_size = 0
-        if self.lowercase_letters.isChecked():
-            pool_size += 26
-        if self.uppercase_letters.isChecked():
-            pool_size += 26
-        if self.numbers.isChecked():
-            pool_size += 10
-        if self.symbols.isChecked():
-            pool_size += 14
-        return pool_size
-
-    def update_strength(self):
-        pool_size = self.selected_pool_size()
-        length = self.length_spin.value()
-
-        if pool_size == 0:
-            self.strength_label.setText("Strength: add at least one character type")
-            self.strength_bar.setValue(0)
-            self.strength_bar.setStyleSheet("")
-            return
-
-        entropy = length * math.log2(pool_size)
-        percentage = min(100, int((entropy / 128) * 100))
-
-        if entropy < 45:
-            label = "Weak"
-            color = themes[self.theme_name]["danger-color"]
-        elif entropy < 80:
-            label = "Fair"
-            color = themes[self.theme_name]["warning-color"]
-        else:
-            label = "Strong"
-            color = themes[self.theme_name]["success-color"]
-
-        self.strength_label.setText(f"Strength: {label} ({entropy:.0f} bits)")
-        self.strength_bar.setValue(percentage)
-        self.strength_bar.setStyleSheet(
-            f"QProgressBar::chunk {{ background-color: {color}; border-radius: {themes['general']['border-radius']}; }}"
-        )
+        self._password_is_visible = not self._password_is_visible
+        muted_color = self.themes[self.theme_name]["muted-color"]
+        self.output_section.toggle_visibility(self._password_is_visible, muted_color)
 
     def set_status(self, message, kind="info"):
-        colors = {
-            "info": themes[self.theme_name]["color"],
-            "success": themes[self.theme_name]["success-color"],
-            "warning": themes[self.theme_name]["warning-color"],
-            "danger": themes[self.theme_name]["danger-color"],
-        }
-        self.status_label.setStyleSheet(f"color: {colors[kind]};")
-        self.status_label.setText(message)
+        self.output_section.status_label.setText(message)
+        if self.output_section.status_label.property("kind") != kind:
+            self.output_section.status_label.setProperty("kind", kind)
+            self.theme_manager._repolish(self.output_section.status_label)
+        self._status_timer.start(2500)
 
     def clear_status(self):
-        if self.status_label.text() in {
-            "Password generated.",
-            "Password generated and copied.",
-            "Copied to clipboard.",
-        }:
-            self.status_label.setText("")
-            self.status_label.setStyleSheet("")
+        self.output_section.status_label.setText("")
+        self.output_section.status_label.setProperty("kind", "info")
+        self.theme_manager._repolish(self.output_section.status_label)
 
 
 def main():
     app = QApplication(sys.argv)
+    app.setOrganizationName("psswd_box")
+    app.setApplicationName("psswd_box")
     window = PsswdBox()
     window.show()
     sys.exit(app.exec())

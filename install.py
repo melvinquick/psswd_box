@@ -53,7 +53,7 @@ def install_app(venv_path):
     sys.stdout.flush()
     pip_path = os.path.join(venv_path, "bin", "pip")
     subprocess.run(
-        [pip_path, "install", "psswd_box"],
+        [pip_path, "install", "--no-cache-dir", "psswd_box"],
         check=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
