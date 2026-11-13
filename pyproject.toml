@@ -6,7 +6,7 @@ readme = "README.md"
 license = "MIT"
 authors = [{ name = "Melvin Quick", email = "melvinquick@proton.me" }]
 requires-python = ">=3.11"
-dependencies = ["pyside6>=6.8.2.1", "pyyaml>=6.0.2"]
+dependencies = ["pyside6>=6.12.0", "pyyaml>=6.0.3"]
 
 [project.urls]
 repository = "https://github.com/melvinquick/psswd_box"
@@ -20,4 +20,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["bandit>=1.8.3"]
+dev = ["bandit>=1.9.4"]
