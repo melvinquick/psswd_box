@@ -9,9 +9,9 @@
 
 <br>
 
-<p align="center"><a href="https://pypi.org/project/psswd_box/"><img src="https://img.shields.io/pypi/v/psswd_box?style=for-the-badge&labelColor=10B981&color=10B981&logo=pypi&logoColor=FFFFFF&label=PyPI" alt="PyPI Version"></a>&nbsp;&nbsp;<a href="https://github.com/melvinquick/psswd_box"><img src="https://img.shields.io/badge/GitHub-334155?style=for-the-badge&labelColor=334155&logo=github&logoColor=FFFFFF&color=334155" alt="GitHub"></a></p>
+<p align="center"><a href="https://pypi.org/project/psswd_box/"><img src="https://img.shields.io/pypi/v/psswd_box?style=for-the-badge&labelColor=F85149&color=F85149&logo=pypi&logoColor=FFFFFF&label=PyPI" alt="PyPI Version"></a>&nbsp;&nbsp;<a href="https://github.com/melvinquick/psswd_box"><img src="https://img.shields.io/badge/GitHub-21262D?style=for-the-badge&labelColor=21262D&logo=github&logoColor=FFFFFF&color=21262D" alt="GitHub"></a></p>
 
-<p align="center"><a href="https://ko-fi.com/melvinquick"><img src="https://img.shields.io/badge/Ko--fi-FBBF24?style=for-the-badge&labelColor=FBBF24&logo=kofi&logoColor=0F172A&color=FBBF24" alt="Ko-fi"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/melvinquick"><img src="https://img.shields.io/badge/GitHub%20Sponsors-A78BFA?style=for-the-badge&labelColor=A78BFA&logo=githubsponsors&logoColor=0F172A&color=A78BFA" alt="GitHub Sponsors"></a></p>
+<p align="center"><a href="https://ko-fi.com/melvinquick"><img src="https://img.shields.io/badge/Ko--fi-FFA657?style=for-the-badge&labelColor=FFA657&logo=kofi&logoColor=FFFFFF&color=FFA657" alt="Ko-fi"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/melvinquick"><img src="https://img.shields.io/badge/GitHub%20Sponsors-D2A8FF?style=for-the-badge&labelColor=D2A8FF&logo=githubsponsors&logoColor=FFFFFF&color=D2A8FF" alt="GitHub Sponsors"></a></p>
 
 <br>
 
