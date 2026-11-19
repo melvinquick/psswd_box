@@ -1,9 +1,15 @@
 import os
-import re
 import shutil
 import subprocess
 import sys
 from textwrap import dedent
+
+# ---------------------------------------------------------------------------
+# Only the pip/import name is required. Everything else is derived or
+# read from the installed package metadata after install.
+# ---------------------------------------------------------------------------
+PACKAGE_NAME = "psswd_box"  # change this when copying to another project
+# ---------------------------------------------------------------------------
 
 
 def print_green(skk):
@@ -14,45 +20,9 @@ def print_red(skk):
     print(f"\033[91m {skk}\033[00m")
 
 
-def get_project_metadata():
-    """Read name and description from pyproject.toml (next to this script or one level up)."""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    candidates = [
-        os.path.join(script_dir, "pyproject.toml"),
-        os.path.join(script_dir, "..", "pyproject.toml"),
-    ]
-    pyproject_path = next((p for p in candidates if os.path.exists(p)), None)
-    if pyproject_path is None:
-        print_red("Error: Could not find pyproject.toml")
-        sys.exit(1)
-
-    with open(pyproject_path, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    name_match = re.search(
-        r'^\s*name\s*=\s*["\']([^"\']+)["\']',
-        content,
-        re.MULTILINE,
-    )
-    desc_match = re.search(
-        r'^\s*description\s*=\s*["\']([^"\']+)["\']',
-        content,
-        re.MULTILINE,
-    )
-
-    if not name_match:
-        print_red("Error: Could not parse name from pyproject.toml")
-        sys.exit(1)
-
-    name = name_match.group(1)
-    description = desc_match.group(1) if desc_match else ""
-    return name, description
-
-
-# Read metadata and derive all name variants
-PACKAGE_NAME, DESCRIPTION = get_project_metadata()
-EXECUTABLE_NAME = PACKAGE_NAME.replace("_", "-")  # name-name
-DISPLAY_NAME = " ".join(w.capitalize() for w in PACKAGE_NAME.split("_"))  # Name Name
+# Derived name variants
+EXECUTABLE_NAME = PACKAGE_NAME.replace("_", "-")
+DISPLAY_NAME = " ".join(w.capitalize() for w in PACKAGE_NAME.split("_"))
 
 # Path fragments built from PACKAGE_NAME
 VENV_NAME = f"{PACKAGE_NAME}_venv"
@@ -108,20 +78,28 @@ def install_app(venv_path):
     print_green("[OK]")
 
 
-def get_installed_version(venv_path):
-    """Read version from installed package metadata inside the venv."""
+def get_installed_metadata(venv_path):
+    """Read version and description from the installed package inside the venv."""
     python_path = os.path.join(venv_path, "bin", "python3")
     result = subprocess.run(
         [
             python_path,
             "-c",
-            f"from importlib.metadata import version; print(version('{PACKAGE_NAME}'))",
+            (
+                "from importlib.metadata import metadata; "
+                f"m = metadata('{PACKAGE_NAME}'); "
+                "print(m['Version']); "
+                "print(m.get('Summary', ''))"
+            ),
         ],
         capture_output=True,
         text=True,
         check=True,
     )
-    return result.stdout.strip()
+    lines = result.stdout.strip().splitlines()
+    version = lines[0] if lines else "unknown"
+    description = lines[1] if len(lines) > 1 else ""
+    return version, description
 
 
 def get_icon(venv_path):
@@ -130,8 +108,7 @@ def get_icon(venv_path):
         if folder.startswith("python"):
             site_packages = os.path.join(site_packages, folder, "site-packages")
             break
-    full_icon_path = os.path.join(site_packages, ICON_RELATIVE_PATH)
-    return full_icon_path
+    return os.path.join(site_packages, ICON_RELATIVE_PATH)
 
 
 def get_python_path(venv_path):
@@ -142,7 +119,7 @@ def get_app_path(venv_path):
     return os.path.join(venv_path, "bin", EXECUTABLE_NAME)
 
 
-def create_desktop_file(icon, version, python, app):
+def create_desktop_file(icon, version, description, python, app):
     print("Creating the .desktop entry...", end=" ")
     sys.stdout.flush()
 
@@ -151,7 +128,7 @@ def create_desktop_file(icon, version, python, app):
         Version={version}
         Type=Application
         Name={DISPLAY_NAME}
-        Comment={DESCRIPTION}
+        Comment={description}
         Exec={python} {app}
         Icon={icon}
         Terminal=false
@@ -195,13 +172,13 @@ def do_install():
     create_venv(venv_path)
     install_app(venv_path)
 
-    # Dynamically read version from installed package metadata
-    version = get_installed_version(venv_path)
+    # Read version + description from the installed package (same pattern as the original version lookup)
+    version, description = get_installed_metadata(venv_path)
 
     icon = get_icon(venv_path)
     python = get_python_path(venv_path)
     app = get_app_path(venv_path)
-    create_desktop_file(icon, version, python, app)
+    create_desktop_file(icon, version, description, python, app)
 
     print()
     print_green(f"{DISPLAY_NAME} v{version} has been successfully installed.")
