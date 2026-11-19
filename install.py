@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -13,16 +14,62 @@ def print_red(skk):
     print(f"\033[91m {skk}\033[00m")
 
 
+def get_project_metadata():
+    """Read name and description from pyproject.toml (next to this script or one level up)."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(script_dir, "pyproject.toml"),
+        os.path.join(script_dir, "..", "pyproject.toml"),
+    ]
+    pyproject_path = next((p for p in candidates if os.path.exists(p)), None)
+    if pyproject_path is None:
+        print_red("Error: Could not find pyproject.toml")
+        sys.exit(1)
+
+    with open(pyproject_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    name_match = re.search(
+        r'^\s*name\s*=\s*["\']([^"\']+)["\']',
+        content,
+        re.MULTILINE,
+    )
+    desc_match = re.search(
+        r'^\s*description\s*=\s*["\']([^"\']+)["\']',
+        content,
+        re.MULTILINE,
+    )
+
+    if not name_match:
+        print_red("Error: Could not parse name from pyproject.toml")
+        sys.exit(1)
+
+    name = name_match.group(1)
+    description = desc_match.group(1) if desc_match else ""
+    return name, description
+
+
+# Read metadata and derive all name variants
+PACKAGE_NAME, DESCRIPTION = get_project_metadata()
+EXECUTABLE_NAME = PACKAGE_NAME.replace("_", "-")  # name-name
+DISPLAY_NAME = " ".join(w.capitalize() for w in PACKAGE_NAME.split("_"))  # Name Name
+
+# Path fragments built from PACKAGE_NAME
+VENV_NAME = f"{PACKAGE_NAME}_venv"
+DESKTOP_FILENAME = f"{PACKAGE_NAME}.desktop"
+ICON_RELATIVE_PATH = f"{PACKAGE_NAME}/resources/images/{PACKAGE_NAME}-128.png"
+
+
 def get_venv_path():
     home_dir = os.path.expanduser("~")
     venv_dir = os.path.join(home_dir, ".venvs")
     if not os.path.exists(venv_dir):
         os.makedirs(venv_dir)
-    return os.path.join(venv_dir, "psswd_box_venv")
+    return os.path.join(venv_dir, VENV_NAME)
 
 
 def get_desktop_file_path():
-    return os.path.expanduser("~/.local/share/applications/psswd_box.desktop")
+    return os.path.expanduser(f"~/.local/share/applications/{DESKTOP_FILENAME}")
 
 
 def create_venv(venv_path):
@@ -49,11 +96,11 @@ def create_venv(venv_path):
 
 
 def install_app(venv_path):
-    print("Installing Psswd Box into the virtual environment...", end=" ")
+    print(f"Installing {DISPLAY_NAME} into the virtual environment...", end=" ")
     sys.stdout.flush()
     pip_path = os.path.join(venv_path, "bin", "pip")
     subprocess.run(
-        [pip_path, "install", "--no-cache-dir", "psswd_box"],
+        [pip_path, "install", "--no-cache-dir", PACKAGE_NAME],
         check=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -68,7 +115,7 @@ def get_installed_version(venv_path):
         [
             python_path,
             "-c",
-            "from importlib.metadata import version; print(version('psswd_box'))",
+            f"from importlib.metadata import version; print(version('{PACKAGE_NAME}'))",
         ],
         capture_output=True,
         text=True,
@@ -83,8 +130,7 @@ def get_icon(venv_path):
         if folder.startswith("python"):
             site_packages = os.path.join(site_packages, folder, "site-packages")
             break
-    icon_relative_path = "psswd_box/resources/images/psswd_box-128.png"
-    full_icon_path = os.path.join(site_packages, icon_relative_path)
+    full_icon_path = os.path.join(site_packages, ICON_RELATIVE_PATH)
     return full_icon_path
 
 
@@ -93,7 +139,7 @@ def get_python_path(venv_path):
 
 
 def get_app_path(venv_path):
-    return os.path.join(venv_path, "bin", "psswd-box")
+    return os.path.join(venv_path, "bin", EXECUTABLE_NAME)
 
 
 def create_desktop_file(icon, version, python, app):
@@ -104,8 +150,8 @@ def create_desktop_file(icon, version, python, app):
         [Desktop Entry]
         Version={version}
         Type=Application
-        Name=Psswd Box
-        Comment=Password generator that never leaves your machine.
+        Name={DISPLAY_NAME}
+        Comment={DESCRIPTION}
         Exec={python} {app}
         Icon={icon}
         Terminal=false
@@ -158,12 +204,12 @@ def do_install():
     create_desktop_file(icon, version, python, app)
 
     print()
-    print_green(f"Psswd Box v{version} has been successfully installed.")
+    print_green(f"{DISPLAY_NAME} v{version} has been successfully installed.")
 
 
 def handle_update():
     """Update = full uninstall followed by fresh install."""
-    print("\nUpdating Psswd Box...\n")
+    print(f"\nUpdating {DISPLAY_NAME}...\n")
     existed = do_uninstall()
     if not existed:
         print("No existing installation found. Performing fresh install.\n")
@@ -176,7 +222,7 @@ def show_menu():
     try:
         with open("/dev/tty", "r") as tty:
             while True:
-                print("\n=== Psswd Box Installer ===")
+                print(f"\n=== {DISPLAY_NAME} Installer ===")
                 print("1) Install")
                 print("2) Update")
                 print("3) Uninstall")
@@ -205,9 +251,9 @@ def show_menu():
                     print()
                     if do_uninstall():
                         print()
-                        print_green("Psswd Box has been uninstalled.")
+                        print_green(f"{DISPLAY_NAME} has been uninstalled.")
                     else:
-                        print("\nPsswd Box does not appear to be installed.")
+                        print(f"\n{DISPLAY_NAME} does not appear to be installed.")
                     break
 
                 elif choice == "0":
