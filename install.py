@@ -4,14 +4,39 @@ import subprocess
 import sys
 from textwrap import dedent
 
-# ---------------------------------------------------------------------------
-# Only the pip/import name is required. Everything else is derived or
-# read from the installed package metadata after install.
-# ---------------------------------------------------------------------------
-PACKAGE_NAME = "psswd_box"  # change this when copying to another project
-# ---------------------------------------------------------------------------
+
+def resolve_package_name():
+    if len(sys.argv) > 1 and sys.argv[1].strip():
+        return sys.argv[1].strip()
+    try:
+        with open("/dev/tty", "r") as tty:
+            sys.stdout.write("Enter the Python package name to install: ")
+            sys.stdout.flush()
+            name = tty.readline().strip()
+            if not name:
+                raise ValueError("Empty package name")
+            return name
+    except (OSError, ValueError) as exc:
+        print(f"Error: no package name provided ({exc}).", file=sys.stderr)
+        print("Usage: curl ... | python3 - <package_name>", file=sys.stderr)
+        sys.exit(2)
 
 
+PACKAGE_NAME = resolve_package_name()
+
+# ---------------------------------------------------------------------------
+# Derived names
+# ---------------------------------------------------------------------------
+EXECUTABLE_NAME = PACKAGE_NAME.replace("_", "-")
+DISPLAY_NAME = " ".join(w.capitalize() for w in PACKAGE_NAME.split("_"))
+VENV_NAME = f"{PACKAGE_NAME}_venv"
+DESKTOP_FILENAME = f"{PACKAGE_NAME}.desktop"
+ICON_RELATIVE_PATH = f"{PACKAGE_NAME}/resources/images/{PACKAGE_NAME}-128.png"
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 def print_green(skk):
     print(f"\033[92m {skk}\033[00m")
 
@@ -20,21 +45,9 @@ def print_red(skk):
     print(f"\033[91m {skk}\033[00m")
 
 
-# Derived name variants
-EXECUTABLE_NAME = PACKAGE_NAME.replace("_", "-")
-DISPLAY_NAME = " ".join(w.capitalize() for w in PACKAGE_NAME.split("_"))
-
-# Path fragments built from PACKAGE_NAME
-VENV_NAME = f"{PACKAGE_NAME}_venv"
-DESKTOP_FILENAME = f"{PACKAGE_NAME}.desktop"
-ICON_RELATIVE_PATH = f"{PACKAGE_NAME}/resources/images/{PACKAGE_NAME}-128.png"
-
-
 def get_venv_path():
-    home_dir = os.path.expanduser("~")
-    venv_dir = os.path.join(home_dir, ".venvs")
-    if not os.path.exists(venv_dir):
-        os.makedirs(venv_dir)
+    venv_dir = os.path.expanduser("~/.venvs")
+    os.makedirs(venv_dir, exist_ok=True)
     return os.path.join(venv_dir, VENV_NAME)
 
 
@@ -42,6 +55,9 @@ def get_desktop_file_path():
     return os.path.expanduser(f"~/.local/share/applications/{DESKTOP_FILENAME}")
 
 
+# ---------------------------------------------------------------------------
+# Core install / uninstall
+# ---------------------------------------------------------------------------
 def create_venv(venv_path):
     print("Creating the virtual environment...", end=" ")
     sys.stdout.flush()
@@ -79,7 +95,6 @@ def install_app(venv_path):
 
 
 def get_installed_metadata(venv_path):
-    """Read version and description from the installed package inside the venv."""
     python_path = os.path.join(venv_path, "bin", "python3")
     result = subprocess.run(
         [
@@ -122,7 +137,6 @@ def get_app_path(venv_path):
 def create_desktop_file(icon, version, description, python, app):
     print("Creating the .desktop entry...", end=" ")
     sys.stdout.flush()
-
     desktop_content = dedent(f"""\
         [Desktop Entry]
         Version={version}
@@ -134,17 +148,14 @@ def create_desktop_file(icon, version, description, python, app):
         Terminal=false
         Categories=Utility;
     """)
-
     desktop_path = get_desktop_file_path()
     os.makedirs(os.path.dirname(desktop_path), exist_ok=True)
-
     with open(desktop_path, "w") as f:
         f.write(desktop_content)
     print_green("[OK]")
 
 
 def do_uninstall():
-    """Removes venv and desktop file. Returns True if anything was removed."""
     venv_path = get_venv_path()
     desktop_file_path = get_desktop_file_path()
     removed = False
@@ -167,25 +178,25 @@ def do_uninstall():
 
 
 def do_install():
-    """Fresh install: creates venv, installs app, creates desktop entry."""
     venv_path = get_venv_path()
     create_venv(venv_path)
     install_app(venv_path)
 
-    # Read version + description from the installed package (same pattern as the original version lookup)
     version, description = get_installed_metadata(venv_path)
 
-    icon = get_icon(venv_path)
-    python = get_python_path(venv_path)
-    app = get_app_path(venv_path)
-    create_desktop_file(icon, version, description, python, app)
+    create_desktop_file(
+        get_icon(venv_path),
+        version,
+        description,
+        get_python_path(venv_path),
+        get_app_path(venv_path),
+    )
 
     print()
     print_green(f"{DISPLAY_NAME} v{version} has been successfully installed.")
 
 
 def handle_update():
-    """Update = full uninstall followed by fresh install."""
     print(f"\nUpdating {DISPLAY_NAME}...\n")
     existed = do_uninstall()
     if not existed:
@@ -195,6 +206,9 @@ def handle_update():
     do_install()
 
 
+# ---------------------------------------------------------------------------
+# Menu
+# ---------------------------------------------------------------------------
 def show_menu():
     try:
         with open("/dev/tty", "r") as tty:
@@ -210,20 +224,18 @@ def show_menu():
                 choice = tty.readline().strip()
 
                 if choice == "1":
-                    venv_path = get_venv_path()
-                    if os.path.exists(venv_path):
+                    if os.path.exists(get_venv_path()):
                         print_red(
-                            "\nExisting installation detected. Please use 'Update' instead."
+                            "\nExisting installation detected. "
+                            "Please use 'Update' instead."
                         )
                         continue
                     print()
                     do_install()
                     break
-
                 elif choice == "2":
                     handle_update()
                     break
-
                 elif choice == "3":
                     print()
                     if do_uninstall():
@@ -232,11 +244,9 @@ def show_menu():
                     else:
                         print(f"\n{DISPLAY_NAME} does not appear to be installed.")
                     break
-
                 elif choice == "0":
                     print("\nGoodbye.")
                     break
-
                 else:
                     print_red("\nInvalid selection. Please try again.")
     except OSError:

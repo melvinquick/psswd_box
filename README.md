@@ -24,7 +24,7 @@ This app was created to give people an easy way to generate passwords completely
 The installer sets up a dedicated venv and creates a desktop shortcut.
 
 ```
-curl -s https://raw.githubusercontent.com/melvinquick/psswd_box/main/install.py | python3 -
+curl -s https://raw.githubusercontent.com/melvinquick/psswd_box/main/install.py | python3 - psswd_box
 ```
 
 ### Supported Operating Systems
