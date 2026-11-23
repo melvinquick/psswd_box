@@ -90,7 +90,7 @@
 
 - Added a Preferences dialog to manage default settings for character types, length, and auto-copy
 - Added persistent settings using `QSettings` to remember user preferences across sessions
-- Added 12 new themes (Psswd Box Dark/Light, Phaino Dark/Light, Equinox Dark/Light, Catppuccin Mocha/Latte, Solarized Dark/Light, Gruvbox Dark/Light) with live theme switching
+- Added 12 new themes with live theme switching
 - Added an About dialog accessible from the Help menu showing app version, author, and license
 - Added SVG icons for password visibility and copy actions within the password field
 - Added a dynamic password strength indicator that scales with entropy and adapts to theme colors
@@ -114,3 +114,22 @@
 - Fixed the password input box collapsing and overlapping the strength bar at smaller window sizes
 - Fixed window resizing forcing the generate button to the bottom of the screen
 - Fixed menu item styling to ensure consistent colors across all themes
+
+## 3.1.0 (23 Nov 2026)
+
+### New Features
+
+- Added the "Sugar Pop" (light) and "Sugar Goth" (dark) themes to the theme selection.
+
+### Improvements
+
+- **Ecosystem Unification:** Standardized the `ThemeManager`, `themes.yaml`, and `styles.qss` across all Melvin Quick applications for a consistent cross-app experience.
+- Removed all one-off app-specific themes in favor of shared ecosystem themes.
+- Renamed the legacy "Phaino Dark/Light" themes to "Phaino Dusk" and "Phaino Dawn".
+- Simplified the theme sorting logic in the Preferences dialog to automatically group Dark/Dusk themes before Light/Dawn themes, and alphabetize the list.
+- Updated the default theme to "Sugar Goth".
+- Cleaned up legacy `theme_manager.register()` calls and manual UI repolishing logic.
+
+### Bug Fixes
+
+- Fixed an issue where the Preferences dialog would not update its own styling when a new theme was selected.

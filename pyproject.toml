@@ -1,12 +1,12 @@
 [project]
 name = "psswd_box"
-version = "3.0.0"
+version = "3.1.0"
 description = "Password generator that never leaves your machine."
 readme = "README.md"
 license = "MIT"
 authors = [{ name = "Melvin Quick", email = "melvinquick@proton.me" }]
 requires-python = ">=3.11"
-dependencies = ["pyside6>=6.12.0", "pyyaml>=6.0.3"]
+dependencies = ["pyside6>=6.12.0", "pyyaml>=6.0.4"]
 
 [project.urls]
 repository = "https://github.com/melvinquick/psswd_box"

@@ -1,45 +1,52 @@
 class ThemeManager:
-    DEFAULT_THEME = "psswd_box_dark"
+    # Set to "sugar_goth" for PNF, Psswd Box, Scramble, Wttrman
+    # Set to "phaino_dusk" for Phaino
+    DEFAULT_THEME = "sugar_goth"
 
     def __init__(self, themes, qss_template):
+        self.general = themes.pop("general", {})
         self.themes = themes
-        self.template = qss_template
-        self._polish_targets = []
-
-    def register(self, widget):
-        if widget not in self._polish_targets:
-            self._polish_targets.append(widget)
-
-    def resolve(self, theme_name):
-        return theme_name if theme_name in self.themes else self.DEFAULT_THEME
-
-    def get_available_themes(self):
-        # Filter out the 'general' block and return sorted keys
-        return sorted([k for k in self.themes if k != "general"])
+        self.qss_template = qss_template
 
     def get_display_name(self, theme_key):
-        # Converts "psswd_box_dark" to "Psswd Box Dark"
-        return theme_key.replace("_", " ").title()
+        return (
+            theme_key.replace("phaino_dusk", "Phaino Dusk")
+            .replace("phaino_dawn", "Phaino Dawn")
+            .replace("_", " ")
+            .title()
+        )
 
-    def build_stylesheet(self, theme_name):
+    def get_available_themes(self):
+        valid_themes = list(self.themes.keys())
+        
+        def sort_key(key):
+            display = self.get_display_name(key)
+            base_name = (
+                display.replace(" Dark", "")
+                .replace(" Light", "")
+                .replace(" Dusk", "")
+                .replace(" Dawn", "")
+            )
+            if " Dark" in display or " Dusk" in display:
+                weight = 0
+            else:
+                weight = 1
+            return (base_name, weight)
+            
+        return sorted(valid_themes, key=sort_key)
+
+    def resolve(self, theme_name):
+        if theme_name in self.themes:
+            return theme_name
+        return self.DEFAULT_THEME
+
+    def render(self, theme_name):
         name = self.resolve(theme_name)
-        tokens = {**self.themes[name], **self.themes["general"]}
-        stylesheet = self.template
+        tokens = {**self.general, **self.themes[name]}
+        
+        qss = self.qss_template
         for key, value in tokens.items():
-            stylesheet = stylesheet.replace("{{" + key + "}}", str(value))
-        return stylesheet
-
-    def apply(self, widget, theme_name):
-        name = self.resolve(theme_name)
-        widget.setStyleSheet(self.build_stylesheet(name))
-        self._repolish_all()
-        return name
-
-    @staticmethod
-    def _repolish(widget):
-        widget.style().unpolish(widget)
-        widget.style().polish(widget)
-
-    def _repolish_all(self):
-        for widget in self._polish_targets:
-            self._repolish(widget)
+            qss = qss.replace(f"{{{{{key}}}}}", str(value))
+            
+        import re
+        return re.sub(r"\{\{[^}]+\}\}", "", qss)

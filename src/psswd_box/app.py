@@ -1,3 +1,4 @@
+import os
 import sys
 
 from PySide6.QtCore import QSettings, Qt, QTimer
@@ -26,8 +27,6 @@ from .components.yaml_file_handler import YamlFileHandler
 class PsswdBox(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.generator = PasswordGenerator()
-        self._password_is_visible = False
 
         self.themes = YamlFileHandler(
             "../resources/styles/themes.yaml"
@@ -35,7 +34,11 @@ class PsswdBox(QMainWindow):
         qss = QssFileHandler("../resources/styles/styles.qss").load_qss_file()
         self.theme_manager = ThemeManager(self.themes, qss)
 
-        self.settings = QSettings("psswd_box", "settings")
+        config_dir = os.path.expanduser("~/.config/psswd_box")
+        os.makedirs(config_dir, exist_ok=True)
+        settings_path = os.path.join(config_dir, "settings.conf")
+        self.settings = QSettings(settings_path, QSettings.Format.IniFormat)
+
         self.theme_name = self.settings.value("theme", ThemeManager.DEFAULT_THEME)
 
         self._status_timer = QTimer(self)
@@ -95,6 +98,8 @@ class PsswdBox(QMainWindow):
         content_layout.setContentsMargins(24, 16, 24, 24)
         content_layout.setSpacing(16)
 
+        self.generator = PasswordGenerator()
+
         self.char_options = CharacterOptions(self.settings)
         self.gen_settings = GenerationSettings(self.settings)
         self.output_section = OutputSection()
@@ -124,9 +129,6 @@ class PsswdBox(QMainWindow):
         self.output_section.copy_btn.clicked.connect(self.copy_password)
         self.generate_button.clicked.connect(self.generate_password)
 
-        self.theme_manager.register(self.output_section.status_label)
-        self.theme_manager.register(self.menu_bar)
-
         self.apply_theme(self.theme_name)
 
         muted_color = self.themes[self.theme_name]["muted-color"]
@@ -155,12 +157,10 @@ class PsswdBox(QMainWindow):
             self.apply_theme(new_theme)
 
     def apply_theme(self, theme_name):
-        self.theme_name = self.theme_manager.apply(self, theme_name)
-        muted_color = self.themes[self.theme_name]["muted-color"]
-        self.output_section.update_theme_icons(muted_color)
-        if self._password_is_visible:
-            self.output_section.toggle_visibility(True, muted_color)
-        self.update_strength()
+        self.theme_name = self.theme_manager.resolve(theme_name)
+        self.settings.setValue("theme", self.theme_name)
+        qss = self.theme_manager.render(self.theme_name)
+        QApplication.instance().setStyleSheet(qss)
 
     def update_strength(self):
         character_types = self.char_options.get_types()
@@ -213,13 +213,11 @@ class PsswdBox(QMainWindow):
         self.output_section.status_label.setText(message)
         if self.output_section.status_label.property("kind") != kind:
             self.output_section.status_label.setProperty("kind", kind)
-            self.theme_manager._repolish(self.output_section.status_label)
         self._status_timer.start(2500)
 
     def clear_status(self):
         self.output_section.status_label.setText("")
         self.output_section.status_label.setProperty("kind", "info")
-        self.theme_manager._repolish(self.output_section.status_label)
 
 
 def main():

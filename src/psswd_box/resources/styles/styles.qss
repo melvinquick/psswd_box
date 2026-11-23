@@ -1,17 +1,16 @@
-/* ============================================================
-   Psswd Box — Global stylesheet
-   ============================================================ */
+/* =========================================
+   UNIVERSAL BASE (DO NOT EDIT PER APP)
+   ========================================= */
 
-/* ---------- Base ---------- */
-#MainWindow, #CentralWidget {
+QWidget {
     background-color: {{background-color}};
+    color: {{color}};
+    font-family: "{{font-family}}";
+    font-size: {{font-size-base}};
 }
 
-QLabel {
-    color: {{color}};
-    background: transparent;
-    border: none;
-    font-size: {{font-size}};
+QMainWindow, QDialog {
+    background-color: {{background-color}};
 }
 
 QToolTip {
@@ -19,29 +18,28 @@ QToolTip {
     color: {{color}};
     border: {{border}};
     border-radius: {{border-radius}};
-    padding: 6px 10px;
+    padding: {{padding-v}} {{padding-h}};
 }
 
-/* ---------- Custom Menu Bar ---------- */
-#TopBarContainer {
-    background-color: {{surface-color}};
-    border-bottom: {{border}};
+QLabel {
+    background: transparent;
+    color: {{color}};
 }
 
 QMenuBar {
-    background-color: transparent;
+    background-color: {{surface-color}};
     color: {{color}};
-    font-size: 13px;
+    border-bottom: {{border}};
 }
 
 QMenuBar::item {
     background: transparent;
     padding: 6px 12px;
-    border-radius: 4px;
+    border-radius: {{border-radius}};
 }
 
 QMenuBar::item:selected {
-    background: {{widget-background-color}};
+    background-color: {{widget-background-color}};
 }
 
 QMenu {
@@ -49,10 +47,12 @@ QMenu {
     color: {{color}};
     border: {{border}};
     border-radius: {{border-radius}};
+    padding: 4px;
 }
 
 QMenu::item {
     padding: 6px 24px;
+    border-radius: {{border-radius}};
 }
 
 QMenu::item:selected {
@@ -60,90 +60,67 @@ QMenu::item:selected {
     color: {{accent-text-color}};
 }
 
-/* The direct Preferences button, styled exactly like a menu item */
-QPushButton#MenuButton {
-    background: transparent;
-    color: {{color}};
-    border: none;
-    padding: 6px 12px;
-    margin: 0px;
-    border-radius: 4px;
-    font-size: 13px;
-}
-
-QPushButton#MenuButton:hover {
-    background: {{widget-background-color}};
-}
-
-QPushButton#MenuButton:pressed {
-    background: {{accent-color}};
-}
-
-/* ---------- Sections ---------- */
-#Section {
+QFrame#Card, QFrame#Section {
     background-color: {{surface-color}};
     border: {{border}};
     border-radius: {{border-radius}};
 }
 
-#SectionTitle {
-    font-size: 15px;
+QLabel#DialogTitle {
+    font-size: {{font-size-lg}};
     font-weight: 700;
     color: {{color}};
-    padding-bottom: 8px;
-    border-bottom: {{border}};
 }
 
-#MutedLabel {
+QLabel#MutedLabel {
     color: {{muted-color}};
+    font-size: {{font-size-base}};
 }
 
-/* ---------- Status label ---------- */
-#StatusLabel { color: {{color}}; }
-#StatusLabel[kind="info"]    { color: {{color}}; }
-#StatusLabel[kind="success"] { color: {{accent-color}}; }
-#StatusLabel[kind="warning"] { color: {{warning-color}}; }
-#StatusLabel[kind="danger"]  { color: {{danger-color}}; }
-
-/* ---------- Checkboxes ---------- */
-QCheckBox {
-    color: {{color}};
-    spacing: 8px;
-    background: transparent;
-    padding: 8px 0px;
-    font-size: 15px;
-}
-
-QCheckBox::indicator {
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    border: {{border}};
-    background-color: {{widget-background-color}};
-}
-
-QCheckBox::indicator:hover {
-    border-color: {{muted-color}};
-}
-
-QCheckBox::indicator:checked {
-    background-color: {{accent-color}};
-    border-color: {{accent-color}};
-}
-
-/* ---------- Standard Inputs ---------- */
-QLineEdit, QSpinBox, QComboBox {
+QPushButton {
     background-color: {{widget-background-color}};
     color: {{color}};
     border: {{border}};
     border-radius: {{border-radius}};
-    padding: {{padding}};
-    font-size: {{font-size}};
-    selection-background-color: {{accent-color}};
+    padding: {{padding-v}} {{padding-h}};
+    min-height: 24px;
 }
 
-QLineEdit:focus, QSpinBox:focus, QComboBox:focus {
-    border: 1px solid {{muted-color}};
+QPushButton:hover {
+    border-color: {{accent-color}};
+}
+
+QPushButton:pressed {
+    background-color: {{accent-color}};
+    color: {{accent-text-color}};
+}
+
+QPushButton#PrimaryButton {
+    background-color: {{accent-color}};
+    color: {{accent-text-color}};
+    border: 1px solid {{accent-color}};
+    font-weight: 700;
+    padding: 12px 16px;
+    font-size: {{font-size-lg}};
+}
+
+QPushButton#PrimaryButton:hover {
+    background-color: {{accent-hover-color}};
+    border-color: {{accent-hover-color}};
+}
+
+QLineEdit, QComboBox {
+    background-color: {{widget-background-color}};
+    color: {{color}};
+    border: {{border}};
+    border-radius: {{border-radius}};
+    padding: {{padding-v}} {{padding-h}};
+    selection-background-color: {{accent-color}};
+    selection-color: {{accent-text-color}};
+}
+
+QLineEdit:focus, QComboBox:focus {
+    border: 1px solid {{accent-color}};
 }
 
 QComboBox::drop-down {
@@ -155,64 +132,37 @@ QComboBox QAbstractItemView {
     background-color: {{surface-color}};
     color: {{color}};
     border: {{border}};
-    selection-background-color: {{accent-color}};
-}
-
-QSpinBox {
-    padding-right: 34px;
-}
-
-QSpinBox::up-button, QSpinBox::down-button {
-    background-color: transparent;
-    width: 32px;
-    border: none;
-}
-QSpinBox::up-button {
-    subcontrol-origin: border;
-    subcontrol-position: top right;
-    border-left: {{border}};
-    border-bottom: {{border}};
-    border-top-right-radius: {{border-radius}};
-}
-QSpinBox::down-button {
-    subcontrol-origin: border;
-    subcontrol-position: bottom right;
-    border-left: {{border}};
-    border-bottom-right-radius: {{border-radius}};
-}
-QSpinBox::up-button:hover, QSpinBox::down-button:hover {
-    background-color: {{widget-background-color}};
-}
-QSpinBox::up-arrow, QSpinBox::down-arrow {
-    width: 12px;
-    height: 12px;
-}
-
-/* ---------- Buttons ---------- */
-QPushButton {
-    background-color: {{widget-background-color}};
-    color: {{color}};
-    border: {{border}};
     border-radius: {{border-radius}};
-    padding: {{padding}};
-    font-size: {{font-size}};
+    selection-background-color: {{accent-color}};
+    selection-color: {{accent-text-color}};
+    outline: none;
 }
 
-QPushButton:hover {
-    border-color: {{muted-color}};
+QCheckBox {
+    color: {{color}};
+    spacing: 8px;
+    background: transparent;
+    padding: 4px 0px;
 }
 
-QPushButton:pressed {
-    background-color: {{surface-color}};
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border: {{border}};
+    border-radius: 3px;
+    background-color: {{widget-background-color}};
 }
 
-QPushButton#PrimaryButton {
-    font-weight: 700;
-    padding: 12px 16px;
-    font-size: 15px;
+QCheckBox::indicator:checked {
+    background-color: {{accent-color}};
+    border-color: {{accent-color}};
+    image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjIwIDYgOSAxNyA0IDEyIj48L3BvbHlsaW5lPjwvc3ZnPg==);
 }
 
-/* ---------- Slider ---------- */
+/* =========================================
+   PSSWD BOX SPECIFIC EXTENSIONS
+   ========================================= */
+
 QSlider::groove:horizontal {
     height: 6px;
     background: {{widget-background-color}};
@@ -232,11 +182,6 @@ QSlider::handle:horizontal {
     background: {{accent-color}};
 }
 
-QSlider::handle:horizontal:hover {
-    background: {{accent-hover-color}};
-}
-
-/* ---------- Progress bar (strength) ---------- */
 QProgressBar {
     background-color: {{widget-background-color}};
     border: none;
@@ -249,9 +194,6 @@ QProgressBar::chunk {
     border-radius: 4px;
 }
 
-/* Removed the [level] rules */
-
-/* ---------- Custom Password Input ---------- */
 #PasswordInput {
     background-color: {{widget-background-color}};
     border: {{border}};
@@ -282,9 +224,127 @@ QPushButton#IconButton:hover {
     background-color: {{surface-color}};
 }
 
-/* ---------- Dialog Overrides ---------- */
-#DialogTitle {
-    font-size: 24px;
-    font-weight: bold;
+QPushButton#MenuButton {
+    background: transparent;
     color: {{color}};
+    border: none;
+    padding: 6px 12px;
+    margin: 0px;
+    border-radius: 4px;
+}
+
+QPushButton#MenuButton:hover {
+    background: {{widget-background-color}};
+}
+
+QPushButton#MenuButton:pressed {
+    background: {{accent-color}};
+}
+
+/* =========================================
+   PSSWD BOX MENU BAR FIXES
+   ========================================= */
+
+QWidget#TopBarContainer {
+    background-color: {{surface-color}};
+    border-bottom: {{border}};
+}
+
+QWidget#TopBarContainer QMenuBar {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+}
+
+QWidget#TopBarContainer QMenuBar::item {
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: {{border-radius}};
+    color: {{color}};
+}
+
+QWidget#TopBarContainer QMenuBar::item:selected {
+    background-color: {{widget-background-color}};
+}
+
+QWidget#TopBarContainer QMenuBar::item:pressed {
+    background-color: {{accent-color}};
+    color: {{accent-text-color}};
+}
+
+/* =========================================
+   PSSWD BOX MENU ALIGNMENT FIXES
+   ========================================= */
+
+QWidget#TopBarContainer QMenuBar {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+QWidget#TopBarContainer QMenuBar::item {
+    background: transparent;
+    padding: 6px 12px;
+    margin: 0px;
+}
+
+QWidget#TopBarContainer QPushButton#MenuButton {
+    background: transparent;
+    color: {{color}};
+    border: none;
+    padding: 6px 12px;
+    margin: 0px;
+    min-height: 0px;
+    text-align: center;
+}
+
+QWidget#TopBarContainer QPushButton#MenuButton:hover {
+    background-color: {{widget-background-color}};
+    border-radius: {{border-radius}};
+}
+
+QWidget#TopBarContainer QPushButton#MenuButton:pressed {
+    background-color: {{accent-color}};
+    color: {{accent-text-color}};
+}
+
+/* =========================================
+   PSSWD BOX MENU FONT ALIGNMENT FIXES
+   ========================================= */
+
+QWidget#TopBarContainer QMenuBar {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+    font-size: {{font-size-base}};
+}
+
+QWidget#TopBarContainer QMenuBar::item {
+    background: transparent;
+    padding: 6px 12px;
+    margin: 0px;
+    min-height: 0px;
+    font-size: {{font-size-base}};
+}
+
+QWidget#TopBarContainer QPushButton#MenuButton {
+    background: transparent;
+    color: {{color}};
+    border: none;
+    padding: 6px 12px;
+    margin: 0px;
+    min-height: 0px;
+    font-size: {{font-size-base}};
+}
+
+QWidget#TopBarContainer QPushButton#MenuButton:hover {
+    background-color: {{widget-background-color}};
+    border-radius: {{border-radius}};
+}
+
+QWidget#TopBarContainer QPushButton#MenuButton:pressed {
+    background-color: {{accent-color}};
+    color: {{accent-text-color}};
 }
